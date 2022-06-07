@@ -30,8 +30,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _initializeVideoPlayerFuture = _controller.initialize().then((value) async {
       await _controller.setLooping(true);
       await _controller.setVolume(0);
-      await _controller.play();
     });
+    if (!_controller.value.isPlaying) {
+      _controller.play();
+    }
   }
 
   @override
@@ -47,10 +49,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     return FutureBuilder(
         future: _initializeVideoPlayerFuture,
         builder: (context, snapshot) {
+          print(_controller.value.isPlaying);
           return !snapshot.hasData || snapshot.connectionState == ConnectionState.waiting
               ?
-              // If the VideoPlayerController has finished initialization, use
-              // the data it provides to limit the aspect ratio of the video.
               Stack(alignment: AlignmentDirectional.bottomEnd, children: [
                   AspectRatio(
                     aspectRatio: _controller.value.aspectRatio,
@@ -64,6 +65,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             ? const Icon(Icons.pause)
                             : const Icon(Icons.play_arrow),
                         onPressed: () async {
+                          if (!_controller.value.isInitialized) return;
                           isPlaying ? await _controller.pause() : await _controller.play();
                           setState(() {
                             isPlaying = !isPlaying;

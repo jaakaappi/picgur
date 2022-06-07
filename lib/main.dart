@@ -138,47 +138,45 @@ class _MyHomePageState extends State<MyHomePage> {
                     print(snapshot.data.toString());
                   }
                   return Center(
-                      child: snapshot.connectionState == ConnectionState.waiting ||
-                              !snapshot.hasData
-                          ? SpinKitWave(
-                              color:
-                                  MediaQuery.of(widgetContext).platformBrightness == Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black,
-                              size: 60,
-                              duration: const Duration(milliseconds: 750))
-                          : ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return Card(
-                                    child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                      Container(
-                                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            snapshot.data![index].title,
-                                            style: const TextStyle(fontSize: 20),
-                                            textAlign: TextAlign.left,
-                                          )),
-                                      snapshot.data![index].content,
-                                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                        const IconButton(
-                                          icon: Icon(Icons.download),
-                                          disabledColor: Colors.grey,
-                                          onPressed: null,
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.share),
-                                          onPressed: () {
-                                            Share.share(snapshot.data![index].galleryUrl,
-                                                subject: snapshot.data![index].title);
-                                          },
-                                        )
-                                      ])
-                                    ]));
-                              }));
+                      child:
+                          snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData
+                              ? SpinKitWave(
+                                  color: themeNotifier.isDark ? Colors.white : Colors.black,
+                                  size: 60,
+                                  duration: const Duration(milliseconds: 750))
+                              : ListView.builder(
+                                  itemCount: snapshot.data!.length,
+                                  addAutomaticKeepAlives: false,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    return Card(
+                                        child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                          Container(
+                                              padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                snapshot.data![index].title,
+                                                style: const TextStyle(fontSize: 20),
+                                                textAlign: TextAlign.left,
+                                              )),
+                                          snapshot.data![index].content,
+                                          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                            const IconButton(
+                                              icon: Icon(Icons.download),
+                                              disabledColor: Colors.grey,
+                                              onPressed: null,
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.share),
+                                              onPressed: () {
+                                                Share.share(snapshot.data![index].galleryUrl,
+                                                    subject: snapshot.data![index].title);
+                                              },
+                                            )
+                                          ])
+                                        ]));
+                                  }));
                 },
               )));
     });
