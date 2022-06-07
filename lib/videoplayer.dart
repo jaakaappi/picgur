@@ -16,7 +16,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   bool isPlaying = true;
-  bool isMuted = false;
+  bool isMuted = true;
 
   late VideoPlayerController _controller;
   late Future<void> _initializeVideoPlayerFuture;
@@ -60,10 +60,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   Align(
                       alignment: Alignment.bottomLeft,
                       child: IconButton(
-                        color: Theme.of(context).colorScheme.primary,
                         icon: _controller.value.isPlaying
-                            ? Icon(Icons.pause)
-                            : Icon(Icons.play_arrow),
+                            ? const Icon(Icons.pause)
+                            : const Icon(Icons.play_arrow),
                         onPressed: () async {
                           isPlaying ? await _controller.pause() : await _controller.play();
                           setState(() {
@@ -74,10 +73,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   Align(
                       alignment: Alignment.bottomRight,
                       child: IconButton(
-                        color: Theme.of(context).colorScheme.primary,
-                        icon: _controller.value.volume == 0
-                            ? Icon(Icons.volume_off)
-                            : Icon(Icons.volume_up),
+                        icon: Icon(isMuted == true ? Icons.volume_off : Icons.volume_up),
                         onPressed: () async {
                           await _controller.setVolume(isMuted ? 100 : 0);
                           setState(() {
@@ -86,8 +82,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                         },
                       ))
                 ])
-              :
-              const Center(
+              : const Center(
                   child: CircularProgressIndicator(),
                 );
         });

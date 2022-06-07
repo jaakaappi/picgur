@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:picgur/models.dart';
+import 'package:picgur/theme_model.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 void main() async {
@@ -27,16 +29,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Picgur',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        /* dark theme settings */
-      ),
-      home: const MyHomePage(),
+    return ChangeNotifierProvider(
+      create: (_) => ThemeModel(),
+      child: Consumer<ThemeModel>(builder: (context, ThemeModel themeNotifier, child) {
+        return MaterialApp(
+          title: 'Picgur',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+          ),
+          themeMode: themeNotifier.isDark ? ThemeMode.dark : ThemeMode.light,
+          home: const MyHomePage(),
+        );
+      }),
     );
   }
 }
@@ -100,69 +107,80 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-        body: NestedScrollView(
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                const SliverAppBar(
-                  title: Text("Picgur"),
-                  floating: true,
-                  snap: true,
-                ),
-              ];
-            },
-            floatHeaderSlivers: true,
-            body: FutureBuilder<List<ImgurPost>>(
-              future: _fetchAlbum(),
-              // a previously-obtained Future<String> or null
-              builder: (BuildContext context, AsyncSnapshot<List<ImgurPost>> snapshot) {
-                if (kDebugMode) {
-                  print('snapshot');
-                  print(snapshot.connectionState);
-                  print(snapshot.data.toString());
-                }
-                return Center(
-                    child: snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData
-                        ? SpinKitWave(
-                            color:
-                                MediaQuery.of(widgetContext).platformBrightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black,
-                            size: 60,
-                            duration: const Duration(milliseconds: 750))
-                        : ListView.builder(
-                            itemCount: snapshot.data!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Card(
-                                  child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                    Container(
-                                        padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          snapshot.data![index].title,
-                                          style: const TextStyle(fontSize: 20),
-                                          textAlign: TextAlign.left,
-                                        )),
-                                    snapshot.data![index].content,
-                                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                      const IconButton(
-                                        icon: Icon(Icons.download),
-                                        disabledColor: Colors.grey,
-                                        onPressed: null,
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.share),
-                                        onPressed: () {
-                                          Share.share(snapshot.data![index].galleryUrl,
-                                              subject: snapshot.data![index].title);
-                                        },
-                                      )
-                                    ])
-                                  ]));
-                            }));
+    return Consumer<ThemeModel>(builder: (context, ThemeModel themeNotifier, child) {
+      return Scaffold(
+          body: NestedScrollView(
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                return <Widget>[
+                  SliverAppBar(
+                    title: const Text("Picgur"),
+                    floating: true,
+                    snap: true,
+                    actions: [
+                      IconButton(
+                          icon:
+                              Icon(themeNotifier.isDark ? Icons.wb_sunny : Icons.nightlight_round),
+                          onPressed: () {
+                            themeNotifier.isDark = !themeNotifier.isDark;
+                          })
+                    ],
+                  ),
+                ];
               },
-            )));
+              floatHeaderSlivers: true,
+              body: FutureBuilder<List<ImgurPost>>(
+                future: _fetchAlbum(),
+                // a previously-obtained Future<String> or null
+                builder: (BuildContext context, AsyncSnapshot<List<ImgurPost>> snapshot) {
+                  if (kDebugMode) {
+                    print('snapshot');
+                    print(snapshot.connectionState);
+                    print(snapshot.data.toString());
+                  }
+                  return Center(
+                      child: snapshot.connectionState == ConnectionState.waiting ||
+                              !snapshot.hasData
+                          ? SpinKitWave(
+                              color:
+                                  MediaQuery.of(widgetContext).platformBrightness == Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
+                              size: 60,
+                              duration: const Duration(milliseconds: 750))
+                          : ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Card(
+                                    child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                      Container(
+                                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            snapshot.data![index].title,
+                                            style: const TextStyle(fontSize: 20),
+                                            textAlign: TextAlign.left,
+                                          )),
+                                      snapshot.data![index].content,
+                                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                        const IconButton(
+                                          icon: Icon(Icons.download),
+                                          disabledColor: Colors.grey,
+                                          onPressed: null,
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.share),
+                                          onPressed: () {
+                                            Share.share(snapshot.data![index].galleryUrl,
+                                                subject: snapshot.data![index].title);
+                                          },
+                                        )
+                                      ])
+                                    ]));
+                              }));
+                },
+              )));
+    });
   }
 }
