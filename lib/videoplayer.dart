@@ -29,9 +29,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     _initializeVideoPlayerFuture = _controller.initialize().then((value) async {
       await _controller.setLooping(true);
-      await _controller.setVolume(0);
     });
     if (!_controller.value.isPlaying) {
+      _controller.setVolume(0);
       _controller.play();
     }
   }

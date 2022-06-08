@@ -26,7 +26,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -145,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   size: 60,
                                   duration: const Duration(milliseconds: 750))
                               : ListView.builder(
+                                  padding: EdgeInsets.zero,
                                   itemCount: snapshot.data!.length,
                                   addAutomaticKeepAlives: false,
                                   itemBuilder: (BuildContext context, int index) {
@@ -157,17 +157,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                               alignment: Alignment.centerLeft,
                                               child: Text(
                                                 snapshot.data![index].title,
-                                                style: const TextStyle(fontSize: 20),
+                                                style: const TextStyle(fontSize: 15),
                                                 textAlign: TextAlign.left,
                                               )),
                                           snapshot.data![index].content,
                                           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                                             const IconButton(
+                                              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                              constraints: BoxConstraints(),
+                                              iconSize: 20,
                                               icon: Icon(Icons.download),
                                               disabledColor: Colors.grey,
                                               onPressed: null,
                                             ),
                                             IconButton(
+                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                              constraints: const BoxConstraints(),
+                                              iconSize: 20,
                                               icon: const Icon(Icons.share),
                                               onPressed: () {
                                                 Share.share(snapshot.data![index].galleryUrl,
