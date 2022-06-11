@@ -16,7 +16,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   bool isPlaying = true;
-  bool isMuted = true;
+  bool isMuted = false;
 
   late VideoPlayerController _controller;
   late Future<void> _initializeVideoPlayerFuture;
@@ -25,7 +25,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void initState() {
     super.initState();
 
-    _controller = VideoPlayerController.network(widget.url);
+    _controller = VideoPlayerController.network(widget.url,
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true));
 
     _initializeVideoPlayerFuture = _controller.initialize().then((value) async {
       await _controller.setLooping(true);
@@ -50,9 +51,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         future: _initializeVideoPlayerFuture,
         builder: (context, snapshot) {
           print(_controller.value.isPlaying);
-          return !snapshot.hasData || snapshot.connectionState == ConnectionState.waiting
-              ?
-              Stack(alignment: AlignmentDirectional.bottomEnd, children: [
+          return !snapshot.hasData ||
+                  snapshot.connectionState == ConnectionState.waiting
+              ? Stack(alignment: AlignmentDirectional.bottomEnd, children: [
                   AspectRatio(
                     aspectRatio: _controller.value.aspectRatio,
                     // Use the VideoPlayer widget to display the video.
@@ -66,7 +67,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             : const Icon(Icons.play_arrow),
                         onPressed: () async {
                           if (!_controller.value.isInitialized) return;
-                          isPlaying ? await _controller.pause() : await _controller.play();
+                          isPlaying
+                              ? await _controller.pause()
+                              : await _controller.play();
                           setState(() {
                             isPlaying = !isPlaying;
                           });
@@ -75,7 +78,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   Align(
                       alignment: Alignment.bottomRight,
                       child: IconButton(
-                        icon: Icon(isMuted == true ? Icons.volume_off : Icons.volume_up),
+                        icon: Icon(isMuted == true
+                            ? Icons.volume_off
+                            : Icons.volume_up),
                         onPressed: () async {
                           await _controller.setVolume(isMuted ? 100 : 0);
                           setState(() {
