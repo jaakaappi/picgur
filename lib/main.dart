@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
       print([response.statusCode, response.body]);
     }
     if (response.statusCode == 200) {
-      print("vitunvittu");
       try {
         Future<List<ImgurPost>> imgurPosts =
             Future.wait((jsonDecode(response.body) as List).map((e) => ImgurPost.fromJson(e)));
