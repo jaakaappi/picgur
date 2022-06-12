@@ -64,42 +64,62 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<ImgurPost> _data = [];
+  late Future<List<ImgurPost>> _future;
+  int _currentPage = 1;
+  final ScrollController _controller =
+      ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
+
+  _MyHomePageState() {
+    _controller.addListener(() {
+      print("end");
+      var isEnd = _controller.offset == _controller.position.maxScrollExtent;
+      if (isEnd) {
+        setState(() {
+          _currentPage += 1;
+          _future = _fetchAlbum();
+        });
+      }
+    });
+    _future = _fetchAlbum();
+  }
+
   Future<String> _localPath() async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
   }
 
+  Future<List<ImgurPost>> _fetchAlbum() async {
+    const section = 'hot';
+    const sort = 'viral';
+    const page = 1;
+
+    final response = await http.get(
+      Uri.parse(
+          '${dotenv.env['IMGUR_API_URL']}/post/v1/posts?client_id=${dotenv.env['IMGUR_API_CLIENT_ID']}&filter[section]=eq:hot&include=cover,viral&page=$_currentPage&sort=-time'),
+    );
+    if (kDebugMode) {
+      print([response.statusCode, response.body]);
+    }
+    if (response.statusCode == 200) {
+      print("vitunvittu");
+      try {
+        Future<List<ImgurPost>> imgurPosts =
+            Future.wait((jsonDecode(response.body) as List).map((e) => ImgurPost.fromJson(e)));
+        //print('imgurPosts');
+        //print(imgurPosts);
+        return imgurPosts;
+      } catch (e, stackTrace) {
+        print('error');
+        print(e);
+        print(stackTrace);
+      }
+    }
+    throw Exception("asd");
+  }
+
   @override
   Widget build(BuildContext widgetContext) {
-    Future<List<ImgurPost>> _fetchAlbum() async {
-      const section = 'hot';
-      const sort = 'viral';
-      const page = 1;
-
-      final response = await http.get(
-        Uri.parse(
-            '${dotenv.env['IMGUR_API_URL']}/post/v1/posts?client_id=${dotenv.env['IMGUR_API_CLIENT_ID']}&filter[section]=eq:hot&include=cover,viral&page=1&sort=-time'),
-      );
-      if (kDebugMode) {
-        print([response.statusCode, response.body]);
-      }
-      if (response.statusCode == 200) {
-        print("vitunvittu");
-        try {
-          Future<List<ImgurPost>> imgurPosts =
-              Future.wait((jsonDecode(response.body) as List).map((e) => ImgurPost.fromJson(e)));
-          //print('imgurPosts');
-          //print(imgurPosts);
-          return imgurPosts;
-        } catch (e, stackTrace) {
-          print('error');
-          print(e);
-          print(stackTrace);
-        }
-      }
-      throw Exception("asd");
-    }
-
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -146,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : ListView.builder(
                                   padding: EdgeInsets.zero,
                                   itemCount: snapshot.data!.length,
-                                  addAutomaticKeepAlives: false,
+                                  controller: _controller,
                                   itemBuilder: (BuildContext context, int index) {
                                     return Card(
                                         child: Column(
@@ -163,7 +183,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                           snapshot.data![index].content,
                                           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                                             const IconButton(
-                                              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                              padding:
+                                                  EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                                               constraints: BoxConstraints(),
                                               iconSize: 20,
                                               icon: Icon(Icons.download),
@@ -171,7 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                               onPressed: null,
                                             ),
                                             IconButton(
-                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                              padding: const EdgeInsets.symmetric(
+                                                  vertical: 8, horizontal: 10),
                                               constraints: const BoxConstraints(),
                                               iconSize: 20,
                                               icon: const Icon(Icons.share),
